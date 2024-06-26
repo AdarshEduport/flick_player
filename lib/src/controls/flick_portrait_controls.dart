@@ -55,7 +55,7 @@ class FlickPortraitControls extends StatelessWidget {
                 Text((playerManager.videoPlayerValue!.errorDescription ?? '')
                     .replaceAll(
                         'androidx.media3.exoplayer.ExoPlaybackException', '')
-                    .substring(0, 45)),
+                    .substring(0, 50)),
                 Icon(Icons.refresh_rounded)
               ],
             ),

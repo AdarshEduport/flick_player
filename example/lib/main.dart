@@ -4,8 +4,6 @@
 
 // ignore_for_file: public_member_api_docs
 
-
-
 import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick-video-player.dart';
 
@@ -40,7 +38,6 @@ class _SamplePlayerState extends State<SamplePlayer> {
   @override
   void dispose() {
     flickManager.dispose();
-
     super.dispose();
   }
 
@@ -55,7 +52,6 @@ class _SamplePlayerState extends State<SamplePlayer> {
               height: 200,
               child: FlickVideoPlayer(
                 flickVideoWithControls: FlickVideoWithControls(
-              
                   controls: FlickPortraitControls(onQualityChanged: () {
                     flickManager.handleChangeVideo(
                         VideoPlayerController.networkUrl(
