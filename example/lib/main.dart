@@ -47,20 +47,15 @@ class _SamplePlayerState extends State<SamplePlayer> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(
-            child: SizedBox(
-              height: 200,
-              child: FlickVideoPlayer(
-                flickVideoWithControls: FlickVideoWithControls(
-                  controls: FlickPortraitControls(onQualityChanged: () {
-                    flickManager.handleChangeVideo(
-                        VideoPlayerController.networkUrl(
-                            Uri.parse(FlickVideoManager.url)));
-                  }),
-                ),
-                flickManager: flickManager,
-              ),
+          FlickVideoPlayer(
+            flickVideoWithControls: FlickVideoWithControls(
+              controls: FlickPortraitControls(onQualityChanged: () {
+                flickManager.handleChangeVideo(
+                    VideoPlayerController.networkUrl(
+                        Uri.parse(FlickVideoManager.url)));
+              }),
             ),
+            flickManager: flickManager,
           ),
           IconButton(onPressed: () {}, icon: Icon(Icons.seven_k))
         ],
