@@ -106,7 +106,7 @@ class FlickPortraitControls extends StatelessWidget {
               Positioned.fill(
                 child: FlickAutoHideChild(
                   child: Padding(
-                    padding: const EdgeInsets.all(10.0),
+                    padding:controlManager.isFullscreen? EdgeInsets.fromLTRB(16,0,16,45) : EdgeInsets.all(10.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
