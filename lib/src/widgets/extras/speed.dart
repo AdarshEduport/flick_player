@@ -2,8 +2,6 @@ import 'package:flick_video_player/src/controls/flick_portrait_controls.dart';
 import 'package:flick_video_player/src/manager/flick_manager.dart';
 import 'package:flutter/material.dart';
 
-
-
 class PlayBackSpeedWidget extends StatefulWidget {
   final double? currentSpeed;
   final Function(double newSpeed) onPlaybackSpeedChanged;
@@ -45,40 +43,46 @@ class _PlayBackSpeedWidgetState extends State<PlayBackSpeedWidget> {
           bottom: 10 + MediaQuery.of(context).padding.bottom,
           left: 16,
           right: 16),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
       width: double.maxFinite,
-      child: ListView.separated(
-        separatorBuilder: (context, index) => const SizedBox(
-          height: 8,
-        ),
-        shrinkWrap: true,
-        itemCount: playBackSpeeds.length,
-        itemBuilder: (context, index) => InkWell(
-          onTap: () {
-            setState(() {
-              currentSpeed = playBackSpeeds.keys.toList()[index];
-              widget.onPlaybackSpeedChanged(currentSpeed);
-            });
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Visibility(
-                  visible: playBackSpeeds.keys.toList()[index] == currentSpeed,
-                  replacement: const SizedBox(
-                    width: 28,
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.black,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
+        child: StretchingOverscrollIndicator(
+          axisDirection: AxisDirection.down,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 8,
+            ),
+            shrinkWrap: true,
+            itemCount: playBackSpeeds.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                setState(() {
+                  currentSpeed = playBackSpeeds.keys.toList()[index];
+                  widget.onPlaybackSpeedChanged(currentSpeed);
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Visibility(
+                      visible: playBackSpeeds.keys.toList()[index] == currentSpeed,
+                      replacement: const SizedBox(
+                        width: 28,
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.check,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(playBackSpeeds.values.toList()[index]),
+                  ],
                 ),
-                Text(playBackSpeeds.values.toList()[index]),
-              ],
+              ),
             ),
           ),
         ),
@@ -96,7 +100,6 @@ void settingsSheet(
     required List<StreamQuality> qualities}) {
   showModalBottomSheet(
     useSafeArea: true,
-    
     backgroundColor: Colors.transparent,
     context: context,
     builder: (context) => Container(
@@ -221,9 +224,9 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
           bottom: 10 + MediaQuery.of(context).padding.bottom,
           left: 16,
           right: 16),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
       width: double.maxFinite,
       child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         separatorBuilder: (context, index) => const SizedBox(
           height: 8,
         ),
@@ -234,7 +237,7 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
             setState(() {
               FlickVideoManager.url = widget.qualities[index].url;
 
-              FlickVideoManager.currentQuality = index ;
+              FlickVideoManager.currentQuality = index;
               widget.onQualityChanged();
             });
           },
@@ -255,7 +258,9 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
                     ),
                   ),
                 ),
-                Text(index == 0 ? 'Auto' : '${widget.qualities[index].qualityLevel}'),
+                Text(index == 0
+                    ? 'Auto'
+                    : '${widget.qualities[index].qualityLevel}'),
               ],
             ),
           ),
