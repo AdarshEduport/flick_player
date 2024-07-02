@@ -42,6 +42,16 @@ class FlickPortraitControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String trim(String data) {
+      data =
+          data.replaceAll('androidx.media3.exoplayer.ExoPlaybackException', '');
+      if (data.length >= 50) {
+        return data.substring(0, 50);
+      } else {
+        return data;
+      }
+    }
+
     final controlManager = Provider.of<FlickControlManager>(context);
     final playerManager = Provider.of<FlickVideoManager>(context);
     return playerManager.errorInVideo
@@ -52,10 +62,8 @@ class FlickPortraitControls extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text((playerManager.videoPlayerValue!.errorDescription ?? '')
-                    .replaceAll(
-                        'androidx.media3.exoplayer.ExoPlaybackException', '')
-                    .substring(0, 50)),
+                Text(trim(
+                    playerManager.videoPlayerValue!.errorDescription ?? '')),
                 Icon(Icons.refresh_rounded)
               ],
             ),
@@ -144,6 +152,7 @@ class FlickPortraitControls extends StatelessWidget {
                             ),
                             FlickFullScreenToggle(
                               size: iconSize,
+                            
                             ),
                           ],
                         ),
@@ -192,7 +201,7 @@ class FlickPortraitControls extends StatelessWidget {
                                   qualityValues.length == qualities.length
                                       ? qualities
                                       : [],
-                              currentSpeed: 1,
+                              currentSpeed: FlickVideoManager.currentSpeed.toDouble(),
                               onQualityChanged: () {
                                 onQualityChanged();
                                 // final currentPosition =
@@ -207,6 +216,7 @@ class FlickPortraitControls extends StatelessWidget {
                               },
                               onPlaybackSpeedChanged: (newSpeed) {
                                 controlManager.setPlaybackSpeed(newSpeed);
+                                FlickVideoManager.currentSpeed = newSpeed;
                               },
                             );
                           },

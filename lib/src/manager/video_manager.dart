@@ -32,7 +32,7 @@ class FlickVideoManager extends ChangeNotifier {
   /// only for quality switching option
   static String url = '';
   static String masterUrl = '';
-
+  static double currentSpeed = 1.0;
   final bool autoInitialize;
 
   /// Is current playing video ended.
@@ -88,6 +88,13 @@ class FlickVideoManager extends ChangeNotifier {
     _notify();
   }
 
+  void _resetState() {
+    FlickVideoManager.currentSpeed = 1;
+    FlickVideoManager.masterUrl = '';
+    FlickVideoManager.currentSpeed = 1;
+    FlickVideoManager.url = '';
+  }
+
   _handleChangeVideo(VideoPlayerController newController,
       {Duration? videoChangeDuration,
       Duration? startAt,
@@ -96,7 +103,7 @@ class FlickVideoManager extends ChangeNotifier {
     if (videoChangeDuration != null) {
       _timerCancelCallback = timerCancelCallback;
       _videoChangeCallback = () {
-        _changeVideo(newController,startAt: startAt);
+        _changeVideo(newController, startAt: startAt);
         _nextVideoAutoPlayTimer = null;
         _nextVideoAutoPlayDuration = null;
         _videoChangeCallback = null;
@@ -109,7 +116,7 @@ class FlickVideoManager extends ChangeNotifier {
       _notify();
     } else {
       // If videoChangeDuration is null, directly change the video.
-      _changeVideo(newController,startAt: startAt);
+      _changeVideo(newController, startAt: startAt);
     }
   }
 
@@ -227,7 +234,7 @@ class FlickVideoManager extends ChangeNotifier {
     _videoPlayerController?.pause();
     _videoPlayerController?.removeListener(_videoListener);
     _videoPlayerController?.dispose();
-
+    _resetState();
     super.dispose();
   }
 }

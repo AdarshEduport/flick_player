@@ -28,9 +28,9 @@ class _SamplePlayerState extends State<SamplePlayer> {
   void initState() {
     super.initState();
     flickManager = FlickManager(
-      startAt: Duration(seconds: 30),
-      videoPlayerController: VideoPlayerController.network(
-        "https://d357lqen3ahf81.cloudfront.net/transcoded/9ud5sfEqgec/video.m3u8",
+      startAt: Duration(seconds: 90),
+      videoPlayerController: VideoPlayerController.networkUrl(
+       Uri.parse("https://d357lqen3ahf81.cloudfront.net/transcoded/9ud5sfEqgec/video.m3u8") ,
       ),
     );
   }
@@ -47,15 +47,20 @@ class _SamplePlayerState extends State<SamplePlayer> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FlickVideoPlayer(
-            flickVideoWithControls: FlickVideoWithControls(
-              controls: FlickPortraitControls(onQualityChanged: () {
-                flickManager.handleChangeVideo(
-                    VideoPlayerController.networkUrl(
+          Flexible(
+            child: AspectRatio(
+              aspectRatio: 16/9,
+              child: FlickVideoPlayer(
+                flickVideoWithControls: FlickVideoWithControls(
+                  videoFit: BoxFit.fitHeight,
+                  controls: FlickPortraitControls(onQualityChanged: () {
+                    flickManager.handleChangeVideo(VideoPlayerController.networkUrl(
                         Uri.parse(FlickVideoManager.url)));
-              }),
+                  }),
+                ),
+                flickManager: flickManager,
+              ),
             ),
-            flickManager: flickManager,
           ),
           IconButton(onPressed: () {}, icon: Icon(Icons.seven_k))
         ],

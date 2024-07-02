@@ -1,10 +1,8 @@
-
 import 'package:flick_video_player/src/controls/flick_video_with_controls.dart';
 import 'package:flick_video_player/src/manager/flick_manager.dart';
 import 'package:flick_video_player/src/utils/flick_manager_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -135,21 +133,24 @@ class _FlickVideoPlayerState extends State<FlickVideoPlayer>
 
     _route = PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) {
+        final size = MediaQuery.of(context).size;
         return PopScope(
           canPop: _route == null,
           onPopInvoked: (didPop) async {
-           if(!didPop) flickManager.flickControlManager!.exitFullscreen();
+            if (!didPop) flickManager.flickControlManager!.exitFullscreen();
           },
           child: AnimatedBuilder(
             animation: animation,
             builder: (BuildContext context, Widget? child) {
-              return Scaffold(
-                body: FlickManagerBuilder(
-                  flickManager: flickManager,
-                  child: widget.flickVideoWithControlsFullscreen ??
-                      widget.flickVideoWithControls,
-                ),
+              return  AspectRatio(
+                aspectRatio: 16/9,
+                child: FlickManagerBuilder(
+                    flickManager: flickManager,
+                    child: widget.flickVideoWithControlsFullscreen ??
+                        widget.flickVideoWithControls,
+                  ),
               );
+              
             },
           ),
         );
@@ -179,13 +180,11 @@ class _FlickVideoPlayerState extends State<FlickVideoPlayer>
 
     _isFullscreen = false;
 
-  
-
     _route = null;
 
     _setPreferredOrientation();
     _setSystemUIOverlays();
-      Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 
   _setPreferredOrientation() {
