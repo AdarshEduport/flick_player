@@ -142,9 +142,8 @@ class _FlickVideoPlayerState extends State<FlickVideoPlayer>
           child: AnimatedBuilder(
             animation: animation,
             builder: (BuildContext context, Widget? child) {
-              return  AspectRatio(
-                aspectRatio: 16/9,
-                child: FlickManagerBuilder(
+              return  Scaffold(
+                body: FlickManagerBuilder(
                     flickManager: flickManager,
                     child: widget.flickVideoWithControlsFullscreen ??
                         widget.flickVideoWithControls,
