@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flick_video_player/src/manager/flick_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +24,7 @@ class FlickVideoBuffer extends StatelessWidget {
     FlickVideoManager videoManager = Provider.of<FlickVideoManager>(context);
 
     return Container(
-      child: (videoManager.isBuffering && videoManager.isPlaying)
+      child: (videoManager.isBuffering && videoManager.isPlaying || (videoManager.videoPlayerValue?.isBuffering??false))
           ? bufferingChild
           : child,
     );

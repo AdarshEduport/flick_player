@@ -15,19 +15,30 @@ class FlickTotalDuration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    String formatDuration(Duration duration) {
+  int hours = duration.inHours;
+  int minutes = duration.inMinutes % 60;
+  int seconds = duration.inSeconds % 60;
+
+  // Format with leading zeros if necessary
+  String formattedHours = hours.toString().padLeft(2, '0');
+  String formattedMinutes = minutes.toString().padLeft(2, '0');
+  String formattedSeconds = seconds.toString().padLeft(2, '0');
+
+   String formatedTime="";
+   if(hours!=0)formatedTime = "$formattedHours:";
+
+  return '$formatedTime$formattedMinutes:$formattedSeconds';
+}
     FlickVideoManager videoManager = Provider.of<FlickVideoManager>(context);
 
     Duration? duration = videoManager.videoPlayerValue?.duration;
 
-    String? durationInSeconds = duration != null
-        ? (duration - Duration(minutes: duration.inMinutes))
-            .inSeconds
-            .toString()
-            .padLeft(2, '0')
-        : null;
+
 
     String textDuration =
-        duration != null ? '${duration.inMinutes}:$durationInSeconds' : '0:00';
+        duration != null ? formatDuration(duration) : '0:00';
 
     return Text(
       textDuration,

@@ -91,7 +91,7 @@ class FlickPortraitControls extends StatelessWidget {
                           ),
                         ),
                         child: FlickAutoHideChild(
-                          showIfVideoNotInitialized: false,
+                          showIfVideoNotInitialized: true,
                           child: FlickPlayToggle(
                             size: 55,
                             color: Colors.white,

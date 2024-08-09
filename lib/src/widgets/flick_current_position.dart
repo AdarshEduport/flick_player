@@ -16,19 +16,29 @@ class FlickCurrentPosition extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+       String formatDuration(Duration duration) {
+  int hours = duration.inHours;
+  int minutes = duration.inMinutes % 60;
+  int seconds = duration.inSeconds % 60;
+
+  // Format with leading zeros if necessary
+  String formattedHours = hours.toString().padLeft(2, '0');
+  String formattedMinutes = minutes.toString().padLeft(2, '0');
+  String formattedSeconds = seconds.toString().padLeft(2, '0');
+
+   String formatedTime="";
+   if(hours!=0)formatedTime = "$formattedHours:";
+
+  return '$formatedTime$formattedMinutes:$formattedSeconds';
+}
     FlickVideoManager videoManager = Provider.of<FlickVideoManager>(context);
 
     Duration? position = videoManager.videoPlayerValue?.position;
 
-    String? positionInSeconds = position != null
-        ? (position - Duration(minutes: position.inMinutes))
-            .inSeconds
-            .toString()
-            .padLeft(2, '0')
-        : null;
+  
 
     String textPosition =
-        position != null ? '${position.inMinutes}:$positionInSeconds' : '0:00';
+        position != null ? formatDuration(position): '0:00';
 
     return Text(
       textPosition,
