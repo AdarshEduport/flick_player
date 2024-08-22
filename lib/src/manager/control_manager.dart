@@ -107,7 +107,21 @@ class FlickControlManager extends ChangeNotifier {
 
   /// Seek video to a duration.
   Future<void> seekTo(Duration moment) async {
-    await _videoPlayerController!.seekTo(moment);
+    if (!kIsWeb && Platform.isIOS && FlickVideoManager.currentSpeed != 1) {
+      await _videoPlayerController!.seekTo(moment).then((_) async {
+
+      await Future.delayed(Duration(milliseconds: 300),()async{
+            await _videoPlayerController!.setPlaybackSpeed(FlickVideoManager.currentSpeed);
+      });
+     
+
+   
+   
+       
+      });
+    } else {
+      await _videoPlayerController!.seekTo(moment);
+    }
   }
 
   /// Seek video forward by the duration.

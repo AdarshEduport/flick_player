@@ -1,6 +1,8 @@
 library flick_manager;
 
 import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
 import 'package:flick_video_player/src/controller/controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +76,10 @@ class FlickManager {
         timerCancelCallback: timerCancelCallback);
 
     _flickControlManager!.seekTo(startAfter ?? Duration.zero);
+
+
+  
+   
   }
 
   _handleToggleFullscreen() {

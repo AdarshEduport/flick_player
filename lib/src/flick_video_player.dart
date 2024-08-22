@@ -133,7 +133,7 @@ class _FlickVideoPlayerState extends State<FlickVideoPlayer>
 
     _route = PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) {
-        final size = MediaQuery.of(context).size;
+     
         return PopScope(
           canPop: _route == null,
           onPopInvoked: (didPop) async {
