@@ -73,13 +73,10 @@ class FlickManager {
       TimerCancelCallback? timerCancelCallback}) {
     _flickVideoManager!._handleChangeVideo(videoPlayerController,
         videoChangeDuration: videoChangeDuration,
+        startAt:startAfter ,
         timerCancelCallback: timerCancelCallback);
 
     _flickControlManager!.seekTo(startAfter ?? Duration.zero);
-
-
-  
-   
   }
 
   _handleToggleFullscreen() {

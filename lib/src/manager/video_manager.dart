@@ -145,6 +145,7 @@ class FlickVideoManager extends ChangeNotifier {
     if (!videoPlayerController!.value.isInitialized && autoInitialize) {
       try {
         await videoPlayerController!.initialize();
+      await  videoPlayerController!.setPlaybackSpeed(FlickVideoManager.currentSpeed);
       } catch (err) {
         _flickManager._handleErrorInVideo();
       }

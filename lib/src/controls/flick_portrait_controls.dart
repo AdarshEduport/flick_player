@@ -54,9 +54,12 @@ class FlickPortraitControls extends StatelessWidget {
 
     final controlManager = Provider.of<FlickControlManager>(context);
     final playerManager = Provider.of<FlickVideoManager>(context);
+
     return playerManager.errorInVideo
         ? GestureDetector(
-            onTap: () {
+            onTap: ()async {
+
+
               onQualityChanged();
             },
             child: Column(
@@ -64,6 +67,9 @@ class FlickPortraitControls extends StatelessWidget {
               children: [
                 Text(trim(
                     playerManager.videoPlayerValue!.errorDescription ?? '')),
+                SizedBox(
+                  height: 10,
+                ),
                 Icon(Icons.refresh_rounded)
               ],
             ),
@@ -106,7 +112,9 @@ class FlickPortraitControls extends StatelessWidget {
               Positioned.fill(
                 child: FlickAutoHideChild(
                   child: Padding(
-                    padding:controlManager.isFullscreen? EdgeInsets.fromLTRB(16,0,16,45) : EdgeInsets.all(10.0),
+                    padding: controlManager.isFullscreen
+                        ? EdgeInsets.fromLTRB(16, 0, 16, 45)
+                        : EdgeInsets.all(10.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
@@ -152,7 +160,6 @@ class FlickPortraitControls extends StatelessWidget {
                             ),
                             FlickFullScreenToggle(
                               size: iconSize,
-                            
                             ),
                           ],
                         ),
@@ -201,18 +208,10 @@ class FlickPortraitControls extends StatelessWidget {
                                   qualityValues.length == qualities.length
                                       ? qualities
                                       : [],
-                              currentSpeed: FlickVideoManager.currentSpeed.toDouble(),
+                              currentSpeed:
+                                  FlickVideoManager.currentSpeed.toDouble(),
                               onQualityChanged: () {
                                 onQualityChanged();
-                                // final currentPosition =
-                                //     videoManager.videoPlayerValue?.position;
-
-                                // final controller = VideoPlayerController.networkUrl(
-                                //     Uri.parse(FlickVideoManager.url));
-                                // flickManager.handleChangeVideo(controller);
-
-                                // controlManager
-                                //     .seekTo(currentPosition ?? Duration.zero);
                               },
                               onPlaybackSpeedChanged: (newSpeed) {
                                 controlManager.setPlaybackSpeed(newSpeed);

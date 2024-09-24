@@ -4,6 +4,8 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick-video-player.dart';
 
@@ -57,11 +59,21 @@ class _SamplePlayerState extends State<SamplePlayer> {
               child: FlickVideoPlayer(
                 flickVideoWithControls: FlickVideoWithControls(
                   videoFit: BoxFit.fitHeight,
-                  controls: FlickPortraitControls(onQualityChanged: () {
+                  controls: FlickPortraitControls(onQualityChanged: () async{
+
+          
+
+                    final url = FlickVideoManager.url.isEmpty?FlickVideoManager.masterUrl:FlickVideoManager.url;
+                              
+
+                         final position =await flickManager.flickVideoManager?.videoPlayerController?.position;
+
                     flickManager.handleChangeVideo(VideoPlayerController.networkUrl(
-                        Uri.parse(FlickVideoManager.url),
+                        Uri.parse( url),
                         formatHint: VideoFormat.hls
-                        ));
+                        ),
+                       startAfter: position
+                        );
                   }),
                 ),
                 flickManager: flickManager,
