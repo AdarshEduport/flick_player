@@ -32,11 +32,10 @@ class _SamplePlayerState extends State<SamplePlayer> {
     flickManager = FlickManager(
       startAt: Duration(seconds: 90),
       videoPlayerController: VideoPlayerController.networkUrl(
-
-       Uri.parse("https://d357lqen3ahf81.cloudfront.net/transcoded/3xs3Q4czfzH/video.m3u8",
-     
-       ) ,
-                 formatHint: VideoFormat.hls,
+        Uri.parse(
+          "https://d357lqen3ahf81.cloudfront.net/transcoded/3xs3Q4czfzH/video.m3u8",
+        ),
+        formatHint: VideoFormat.hls,
       ),
     );
   }
@@ -55,25 +54,28 @@ class _SamplePlayerState extends State<SamplePlayer> {
         children: [
           Flexible(
             child: AspectRatio(
-              aspectRatio: 16/9,
+              aspectRatio: 16 / 9,
               child: FlickVideoPlayer(
                 flickVideoWithControls: FlickVideoWithControls(
                   videoFit: BoxFit.fitHeight,
-                  controls: FlickPortraitControls(onQualityChanged: () async{
+                  controls: FlickPortraitControls(onQualityChanged: () async {
+                    final url = FlickVideoManager.url.isEmpty
+                        ? FlickVideoManager.masterUrl
+                        : FlickVideoManager.url;
 
+                    final position = await flickManager
+                        .flickVideoManager?.videoPlayerController?.position;
+                    if ((position ?? Duration()).inSeconds != 0) {
+                      FlickVideoManager.lastErrorPosition =
+                          position ?? Duration();
+                    }
+                    ;
           
 
-                    final url = FlickVideoManager.url.isEmpty?FlickVideoManager.masterUrl:FlickVideoManager.url;
-                              
-
-                         final position =await flickManager.flickVideoManager?.videoPlayerController?.position;
-
-                    flickManager.handleChangeVideo(VideoPlayerController.networkUrl(
-                        Uri.parse( url),
-                        formatHint: VideoFormat.hls
-                        ),
-                       startAfter: position
-                        );
+                    flickManager.handleChangeVideo(
+                        VideoPlayerController.networkUrl(Uri.parse(url),
+                            formatHint: VideoFormat.hls),
+                        startAfter:  FlickVideoManager.lastErrorPosition);
                   }),
                 ),
                 flickManager: flickManager,

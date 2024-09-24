@@ -33,6 +33,7 @@ class FlickVideoManager extends ChangeNotifier {
   static String url = '';
   static String masterUrl = '';
   static double currentSpeed = 1.0;
+  static Duration ? lastErrorPosition;
   final bool autoInitialize;
 
   /// Is current playing video ended.
@@ -93,6 +94,7 @@ class FlickVideoManager extends ChangeNotifier {
     FlickVideoManager.masterUrl = '';
     FlickVideoManager.currentSpeed = 1;
     FlickVideoManager.url = '';
+    FlickVideoManager.lastErrorPosition=null;
   }
 
   _handleChangeVideo(VideoPlayerController newController,
