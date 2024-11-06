@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flick_video_player/src/manager/flick_manager.dart';
 import 'package:flick_video_player/src/widgets/action_widgets/flick_seek_video_action.dart';
 import 'package:flick_video_player/src/widgets/action_widgets/flick_show_control_action.dart';
@@ -14,6 +13,7 @@ import 'package:flick_video_player/src/widgets/helpers/flick_auto_hide_child.dar
 import 'package:flick_video_player/src/widgets/helpers/progress_bar/progress_bar_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 /// Default portrait controls.
 class FlickPortraitControls extends StatelessWidget {
@@ -57,9 +57,7 @@ class FlickPortraitControls extends StatelessWidget {
 
     return playerManager.errorInVideo
         ? GestureDetector(
-            onTap: ()async {
-
-
+            onTap: () async {
               onQualityChanged();
             },
             child: Column(
@@ -176,38 +174,33 @@ class FlickPortraitControls extends StatelessWidget {
                   right: 0,
                   child: FlickAutoHideChild(
                       child: IconButton(
-                          onPressed: () {
+                          onPressed: () async {
                             String? url = FlickVideoManager.masterUrl;
-
-                            List<StreamQuality> qualities = [];
-                            List<String> qualityValues = [
-                              '',
-                              '240p',
-                              '360p',
-                              '480p',
-                              '720p'
-                            ];
-                            if (url.isNotEmpty && url.endsWith('.m3u8')) {
-                              for (int quality = 0; quality < 5; quality++) {
-                                if (quality == 0) {
-                                  qualities.add(StreamQuality(
-                                      qualityValues[quality], url));
-                                } else {
-                                  qualities.add(StreamQuality(
-                                      qualityValues[quality],
-                                      url.replaceAll('video.m3u8',
-                                          '${qualityValues[quality]}/video.m3u8')));
-                                }
-                              }
-                            }
+                            // List<String> qualityValues = [
+                            //   '',
+                            //   '240p',
+                            //   '360p',
+                            //   '480p',
+                            //   '720p'
+                            // ];
+                            // if (url.isNotEmpty && url.endsWith('.m3u8')) {
+                            //   for (int quality = 0; quality < 5; quality++) {
+                            //     if (quality == 0) {
+                            //       qualities.add(StreamQuality(
+                            //           qualityValues[quality], url));
+                            //     } else {
+                            //       qualities.add(StreamQuality(
+                            //           qualityValues[quality],
+                            //           url.replaceAll('video.m3u8',
+                            //               '${qualityValues[quality]}/video.m3u8')));
+                            //     }
+                            //   }
+                            // }
 
                             settingsSheet(
                               context: context,
                               currentQuality: -1,
-                              qualities:
-                                  qualityValues.length == qualities.length
-                                      ? qualities
-                                      : [],
+                              qualities: await fetchQualities(url),
                               currentSpeed:
                                   FlickVideoManager.currentSpeed.toDouble(),
                               onQualityChanged: () {
@@ -230,4 +223,51 @@ class StreamQuality {
 
   final String qualityLevel;
   final String url;
+}
+
+Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
+  try {
+    final response = await http.get(Uri.parse(mainM3u8Url));
+    final lines = response.body.toString().split('\n');
+    final qualities = <StreamQuality>[StreamQuality('Auto', mainM3u8Url)];
+
+    final uri = Uri.parse(mainM3u8Url);
+    final baseUrl =
+        '${uri.scheme}://${uri.host}${uri.path.substring(0, uri.path.lastIndexOf('/'))}';
+
+    for (var i = 0; i < lines.length - 1; i++) {
+      final currentLine = lines[i].trim();
+      final nextLine = lines[i + 1].trim();
+
+      if (currentLine.startsWith('#EXT-X-STREAM-INF')) {
+        if (nextLine.isNotEmpty && !nextLine.startsWith('#')) {
+          final fullUrl = nextLine.startsWith('http')
+              ? nextLine
+              : '$baseUrl/${nextLine.startsWith('/') ? nextLine.substring(1) : nextLine}';
+
+          // Extract quality from the path
+          final pathParts = fullUrl.split('/');
+          final qualityPart = pathParts.firstWhere(
+            (part) =>
+                part.contains('p') &&
+                (part.endsWith('p') || part.contains('p_')),
+            orElse: () => '',
+          );
+
+          if (qualityPart.isNotEmpty) {
+            final qualityString = qualityPart.contains('_')
+                ? qualityPart.split('_').first
+                : qualityPart;
+
+            qualities.add(StreamQuality(qualityString, fullUrl));
+            log('Quality: $qualityString, URL: $fullUrl');
+          }
+        }
+      }
+    }
+
+    return qualities;
+  } catch (e) {
+    rethrow;
+  }
 }

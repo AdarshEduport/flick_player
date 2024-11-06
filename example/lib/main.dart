@@ -4,8 +4,6 @@
 
 // ignore_for_file: public_member_api_docs
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick-video-player.dart';
 
@@ -35,6 +33,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
         Uri.parse(
           "https://d357lqen3ahf81.cloudfront.net/transcoded/3xs3Q4czfzH/video.m3u8",
         ),
+        //https://d357lqen3ahf81.cloudfront.net/transcoded/BYQBKK3tKhH/video.m3u8 (240p_h264/video.m3u8)
         formatHint: VideoFormat.hls,
       ),
     );
@@ -70,12 +69,11 @@ class _SamplePlayerState extends State<SamplePlayer> {
                           position ?? Duration();
                     }
                     ;
-          
 
                     flickManager.handleChangeVideo(
                         VideoPlayerController.networkUrl(Uri.parse(url),
                             formatHint: VideoFormat.hls),
-                        startAfter:  FlickVideoManager.lastErrorPosition);
+                        startAfter: FlickVideoManager.lastErrorPosition);
                   }),
                 ),
                 flickManager: flickManager,
