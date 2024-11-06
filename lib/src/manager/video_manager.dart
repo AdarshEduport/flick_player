@@ -175,7 +175,7 @@ class FlickVideoManager extends ChangeNotifier {
       await videoPlayerController!.seekTo(lastWatchDuration);
       videoPlayerController!.play();
     }
-    if (startAt != null) {
+    if ( startAt != null && autoPlay) {
       await videoPlayerController!.seekTo(startAt);
       videoPlayerController!.play();
     }
