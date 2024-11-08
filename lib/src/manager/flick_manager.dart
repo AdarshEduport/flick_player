@@ -76,8 +76,10 @@ class FlickManager {
         startAt:startAfter ,
         timerCancelCallback: timerCancelCallback);
 
-    _flickControlManager!.seekTo(startAfter ?? Duration.zero);
+    // _flickControlManager!.seekTo(startAfter ?? Duration.zero);
   }
+
+
 
   _handleToggleFullscreen() {
     _flickDisplayManager!._handleToggleFullscreen();

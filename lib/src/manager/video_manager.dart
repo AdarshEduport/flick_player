@@ -33,7 +33,7 @@ class FlickVideoManager extends ChangeNotifier {
   static String url = '';
   static String masterUrl = '';
   static double currentSpeed = 1.0;
-  static Duration ? lastErrorPosition;
+  static Duration? lastErrorPosition;
   final bool autoInitialize;
 
   /// Is current playing video ended.
@@ -94,7 +94,7 @@ class FlickVideoManager extends ChangeNotifier {
     FlickVideoManager.masterUrl = '';
     FlickVideoManager.currentSpeed = 1;
     FlickVideoManager.url = '';
-    FlickVideoManager.lastErrorPosition=null;
+    FlickVideoManager.lastErrorPosition = null;
   }
 
   _handleChangeVideo(VideoPlayerController newController,
@@ -147,7 +147,7 @@ class FlickVideoManager extends ChangeNotifier {
     if (!videoPlayerController!.value.isInitialized && autoInitialize) {
       try {
         await videoPlayerController!.initialize();
-      await  videoPlayerController!.setPlaybackSpeed(FlickVideoManager.currentSpeed);
+        // await  videoPlayerController!.setPlaybackSpeed(FlickVideoManager.currentSpeed);
       } catch (err) {
         _flickManager._handleErrorInVideo();
       }
@@ -161,7 +161,9 @@ class FlickVideoManager extends ChangeNotifier {
           .seekTo(Duration(hours: 0, minutes: 0, seconds: 0, milliseconds: 0));
     }
 
-    if (autoPlay && _flickManager._context!=null&& ModalRoute.of(_flickManager._context!)!.isCurrent) {
+    if (autoPlay &&
+        _flickManager._context != null &&
+        ModalRoute.of(_flickManager._context!)!.isCurrent) {
       //Chrome's autoplay policies are simple:
       //Muted autoplay is always allowed.
       if (kIsWeb) _flickManager.flickControlManager!.mute();
@@ -170,14 +172,21 @@ class FlickVideoManager extends ChangeNotifier {
       // Start playing the video.
       _flickManager.flickControlManager!.play();
     }
-
-    if (lastWatchDuration != null && lastWatchDuration != Duration.zero) {
+    bool canSeek =
+        lastWatchDuration != null && lastWatchDuration != Duration.zero;
+    if (canSeek) {
       await videoPlayerController!.seekTo(lastWatchDuration);
-      videoPlayerController!.play();
+      await videoPlayerController!.play();
+      if (Platform.isAndroid)
+        await videoPlayerController!
+            .setPlaybackSpeed(FlickVideoManager.currentSpeed);
     }
-    if ( startAt != null && autoPlay) {
+    if (startAt != null && autoPlay && !canSeek) {
       await videoPlayerController!.seekTo(startAt);
-      videoPlayerController!.play();
+      await videoPlayerController!.play();
+      if (Platform.isAndroid)
+        await videoPlayerController!
+            .setPlaybackSpeed(FlickVideoManager.currentSpeed);
     }
 
     _notify();
@@ -214,8 +223,23 @@ class FlickVideoManager extends ChangeNotifier {
         videoPlayerController!.value.buffered.isNotEmpty == true &&
         videoPlayerController!.value.position.inSeconds >=
             videoPlayerController!.value.buffered[0].end.inSeconds;
+            
+    _setIosPlayBackSpeed(
+        currentSpeed: videoPlayerController!.value.playbackSpeed);
 
     _notify();
+  }
+
+
+// ON ios devices , the playback speed will reset after each initilization of controller 
+  _setIosPlayBackSpeed({required double currentSpeed}) async {
+    if (FlickVideoManager.currentSpeed != currentSpeed &&
+        (videoPlayerController?.value.isPlaying ?? false)) {
+      Future.delayed(Duration(milliseconds: 300), () async {
+        await videoPlayerController!
+            .setPlaybackSpeed(FlickVideoManager.currentSpeed);
+      });
+    }
   }
 
   // Video-end handler.

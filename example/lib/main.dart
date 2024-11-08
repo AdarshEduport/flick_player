@@ -28,7 +28,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
   void initState() {
     super.initState();
     flickManager = FlickManager(
-      startAt: Duration(seconds: 90),
+      startAt: Duration(seconds: 400),
       videoPlayerController: VideoPlayerController.networkUrl(
         Uri.parse(
           "https://d357lqen3ahf81.cloudfront.net/transcoded/3xs3Q4czfzH/video.m3u8",
