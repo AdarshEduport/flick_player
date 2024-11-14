@@ -54,6 +54,7 @@ class FlickPortraitControls extends StatelessWidget {
 
     final controlManager = Provider.of<FlickControlManager>(context);
     final playerManager = Provider.of<FlickVideoManager>(context);
+    bool _isPopupVisible = false;
 
     return playerManager.errorInVideo
         ? GestureDetector(
@@ -173,46 +174,39 @@ class FlickPortraitControls extends StatelessWidget {
                   top: 6,
                   right: 0,
                   child: FlickAutoHideChild(
-                      child: IconButton(
-                          onPressed: () async {
-                            String? url = FlickVideoManager.masterUrl;
-                            // List<String> qualityValues = [
-                            //   '',
-                            //   '240p',
-                            //   '360p',
-                            //   '480p',
-                            //   '720p'
-                            // ];
-                            // if (url.isNotEmpty && url.endsWith('.m3u8')) {
-                            //   for (int quality = 0; quality < 5; quality++) {
-                            //     if (quality == 0) {
-                            //       qualities.add(StreamQuality(
-                            //           qualityValues[quality], url));
-                            //     } else {
-                            //       qualities.add(StreamQuality(
-                            //           qualityValues[quality],
-                            //           url.replaceAll('video.m3u8',
-                            //               '${qualityValues[quality]}/video.m3u8')));
-                            //     }
-                            //   }
-                            // }
+                    child: IconButton(
+                      onPressed: () async {
+                        if (_isPopupVisible)
+                          return; // Prevent opening another popup if one is already visible
+                        _isPopupVisible = true; // Mark popup as visible
 
-                            settingsSheet(
-                              context: context,
-                              currentQuality: -1,
-                              qualities: await fetchQualities(url),
-                              currentSpeed:
-                                  FlickVideoManager.currentSpeed.toDouble(),
-                              onQualityChanged: () {
-                                onQualityChanged();
-                              },
-                              onPlaybackSpeedChanged: (newSpeed) {
-                                controlManager.setPlaybackSpeed(newSpeed);
-                                FlickVideoManager.currentSpeed = newSpeed;
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.settings)))),
+                        try {
+                          String? url = FlickVideoManager.masterUrl;
+
+                          settingsSheet(
+                            context: context,
+                            currentQuality: -1,
+                            qualities: await fetchQualities(url),
+                            currentSpeed:
+                                FlickVideoManager.currentSpeed.toDouble(),
+                            onQualityChanged: () {
+                              onQualityChanged();
+                              Navigator.pop(context);
+                            },
+                            onPlaybackSpeedChanged: (newSpeed) {
+                              controlManager.setPlaybackSpeed(newSpeed);
+                              FlickVideoManager.currentSpeed = newSpeed;
+                              Navigator.pop(context);
+                            },
+                          );
+                        } finally {
+                          // Reset the popup visibility flag when the popup is dismissed
+                          _isPopupVisible = false;
+                        }
+                      },
+                      icon: const Icon(Icons.settings),
+                    ),
+                  )),
             ],
           );
   }
