@@ -221,13 +221,20 @@ class StreamQuality {
 
 Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
   try {
-    final response = await http.get(Uri.parse(mainM3u8Url));
+    final response = await http.get(Uri.parse(mainM3u8Url)).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => throw Exception('Request timed out'),
+        );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load m3u8: ${response.statusCode}');
+    }
+
     final lines = response.body.toString().split('\n');
     final qualities = <StreamQuality>[StreamQuality('Auto', mainM3u8Url)];
 
     final uri = Uri.parse(mainM3u8Url);
-    final baseUrl =
-        '${uri.scheme}://${uri.host}${uri.path.substring(0, uri.path.lastIndexOf('/'))}';
+    final baseUrl = _getBaseUrl(uri);
 
     for (var i = 0; i < lines.length - 1; i++) {
       final currentLine = lines[i].trim();
@@ -235,33 +242,105 @@ Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
 
       if (currentLine.startsWith('#EXT-X-STREAM-INF')) {
         if (nextLine.isNotEmpty && !nextLine.startsWith('#')) {
-          final fullUrl = nextLine.startsWith('http')
-              ? nextLine
-              : '$baseUrl/${nextLine.startsWith('/') ? nextLine.substring(1) : nextLine}';
+          final streamUrl = _buildFullUrl(nextLine, baseUrl);
+          final quality = _parseQualityLevel(currentLine, streamUrl);
 
-          // Extract quality from the path
-          final pathParts = fullUrl.split('/');
-          final qualityPart = pathParts.firstWhere(
-            (part) =>
-                part.contains('p') &&
-                (part.endsWith('p') || part.contains('p_')),
-            orElse: () => '',
-          );
-
-          if (qualityPart.isNotEmpty) {
-            final qualityString = qualityPart.contains('_')
-                ? qualityPart.split('_').first
-                : qualityPart;
-
-            qualities.add(StreamQuality(qualityString, fullUrl));
-            log('Quality: $qualityString, URL: $fullUrl');
+          if (quality != null) {
+            qualities.add(quality);
+            log('Found quality: ${quality.qualityLevel}, URL: ${quality.url}');
           }
         }
       }
     }
 
+    // Sort qualities (excluding Auto which should stay first)
+    if (qualities.length > 1) {
+      final autoQuality = qualities.removeAt(0);
+      qualities.sort((a, b) {
+        final heightA =
+            int.tryParse(a.qualityLevel.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        final heightB =
+            int.tryParse(b.qualityLevel.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        return heightB.compareTo(heightA);
+      });
+      qualities.insert(0, autoQuality);
+    }
+
     return qualities;
-  } catch (e) {
+  } catch (e, stackTrace) {
+    log('Error fetching qualities', error: e, stackTrace: stackTrace);
     rethrow;
   }
+}
+
+/// Parses quality level from stream information
+StreamQuality? _parseQualityLevel(String streamInfo, String streamUrl) {
+  final attributes = _parseStreamAttributes(streamInfo);
+  String? qualityLevel;
+
+  // Try to get quality from RESOLUTION
+  if (attributes.containsKey('RESOLUTION')) {
+    final resolution = attributes['RESOLUTION']!;
+    if (resolution.contains('x')) {
+      final height = int.tryParse(resolution.split('x')[1]);
+      if (height != null) {
+        qualityLevel = '${height}p';
+      }
+    }
+  }
+
+  // Try to get quality from URL path
+  if (qualityLevel == null) {
+    final pathParts = streamUrl.split('/');
+    for (final part in pathParts) {
+      if (part.contains('p') && (part.endsWith('p') || part.contains('p_'))) {
+        qualityLevel = part.contains('_') ? part.split('_').first : part;
+        break;
+      }
+    }
+  }
+
+  // Use bandwidth as fallback
+  if (qualityLevel == null && attributes.containsKey('BANDWIDTH')) {
+    final bandwidth = int.tryParse(attributes['BANDWIDTH']!);
+    if (bandwidth != null) {
+      final mbps = (bandwidth / 1000000).toStringAsFixed(1);
+      qualityLevel = '${mbps}MB/s';
+    }
+  }
+
+  return qualityLevel != null ? StreamQuality(qualityLevel, streamUrl) : null;
+}
+
+/// Parses stream attributes from the STREAM-INF tag
+Map<String, String> _parseStreamAttributes(String line) {
+  final attributes = <String, String>{};
+  final pattern = RegExp(r'([A-Z-]+)=(?:"([^"]*)"|([^,]*))');
+  final matches = pattern.allMatches(line);
+
+  for (final match in matches) {
+    final key = match.group(1);
+    final value = match.group(2) ?? match.group(3);
+    if (key != null && value != null) {
+      attributes[key] = value;
+    }
+  }
+
+  return attributes;
+}
+
+/// Builds full URL from a potentially relative path
+String _buildFullUrl(String path, String baseUrl) {
+  if (path.startsWith('http')) {
+    return path;
+  }
+  return '$baseUrl/${path.startsWith('/') ? path.substring(1) : path}';
+}
+
+/// Gets base URL from main M3U8 URL
+String _getBaseUrl(Uri uri) {
+  final path = uri.path;
+  final lastSlash = path.lastIndexOf('/');
+  final basePath = lastSlash != -1 ? path.substring(0, lastSlash) : path;
+  return '${uri.scheme}://${uri.host}$basePath';
 }
