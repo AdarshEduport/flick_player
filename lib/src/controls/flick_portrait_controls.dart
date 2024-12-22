@@ -1,4 +1,10 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
 import 'package:flick_video_player/src/manager/flick_manager.dart';
 import 'package:flick_video_player/src/widgets/action_widgets/flick_seek_video_action.dart';
 import 'package:flick_video_player/src/widgets/action_widgets/flick_show_control_action.dart';
@@ -11,21 +17,19 @@ import 'package:flick_video_player/src/widgets/flick_video_buffer.dart';
 import 'package:flick_video_player/src/widgets/flick_video_progress_bar.dart';
 import 'package:flick_video_player/src/widgets/helpers/flick_auto_hide_child.dart';
 import 'package:flick_video_player/src/widgets/helpers/progress_bar/progress_bar_settings.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 
 /// Default portrait controls.
 class FlickPortraitControls extends StatelessWidget {
   final Function() onQualityChanged;
-
+  final void Function(String errorDescription)? onErrorRefresh;
   const FlickPortraitControls({
-    super.key,
+    Key? key,
+    required this.onQualityChanged,
+    this.onErrorRefresh,
     this.iconSize = 20,
     this.fontSize = 12,
     this.progressBarSettings,
-    required this.onQualityChanged,
-  });
+  }) : super(key: key);
 
   /// Icon size.
   ///
@@ -59,6 +63,11 @@ class FlickPortraitControls extends StatelessWidget {
     return playerManager.errorInVideo
         ? GestureDetector(
             onTap: () async {
+              if (onErrorRefresh != null) {
+                onErrorRefresh!(
+                    playerManager.videoPlayerValue!.errorDescription ?? '');
+              }
+
               onQualityChanged();
             },
             child: Column(
