@@ -67,7 +67,8 @@ class _PlayBackSpeedWidgetState extends State<PlayBackSpeedWidget> {
                 child: Row(
                   children: [
                     Visibility(
-                      visible: playBackSpeeds.keys.toList()[index] == currentSpeed,
+                      visible:
+                          playBackSpeeds.keys.toList()[index] == currentSpeed,
                       replacement: const SizedBox(
                         width: 28,
                       ),
@@ -127,7 +128,8 @@ void settingsSheet(
                 onTap: () {
                   showModalBottomSheet(
                     useSafeArea: true,
-                    backgroundColor: Colors.transparent,
+                    showDragHandle: true,
+                    backgroundColor: Colors.white,
                     context: context,
                     builder: (context) => QualitiesWidget(
                       currentQuality: currentQuality,
@@ -151,8 +153,9 @@ void settingsSheet(
             title: 'Playback Speed',
             onTap: () {
               showModalBottomSheet(
-                backgroundColor: Colors.transparent,
                 context: context,
+                showDragHandle: true,
+                backgroundColor: Colors.white,
                 builder: (context) => PlayBackSpeedWidget(
                   currentSpeed: currentSpeed,
                   onPlaybackSpeedChanged: (double newSpeed) async {
