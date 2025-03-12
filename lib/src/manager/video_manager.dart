@@ -140,7 +140,7 @@ class FlickVideoManager extends ChangeNotifier {
     _notify();
 
     // Dispose the old controller after 5 seconds.
-    Future.delayed(Duration(seconds: 5), () => oldController?.dispose());
+    if (!Platform.isIOS) Future.delayed(Duration(seconds: 5), () => oldController?.dispose());
 
     // Initialize the video if not initialized
     // (User can initialize the video while passing to flick).
@@ -163,7 +163,7 @@ class FlickVideoManager extends ChangeNotifier {
 
     if (autoPlay &&
         _flickManager._context != null &&
-          ModalRoute.of(_flickManager._context!)!=null &&
+        ModalRoute.of(_flickManager._context!) != null &&
         ModalRoute.of(_flickManager._context!)!.isCurrent) {
       //Chrome's autoplay policies are simple:
       //Muted autoplay is always allowed.
@@ -224,15 +224,14 @@ class FlickVideoManager extends ChangeNotifier {
         videoPlayerController!.value.buffered.isNotEmpty == true &&
         videoPlayerController!.value.position.inSeconds >=
             videoPlayerController!.value.buffered[0].end.inSeconds;
-            
+
     _setIosPlayBackSpeed(
         currentSpeed: videoPlayerController!.value.playbackSpeed);
 
     _notify();
   }
 
-
-// ON ios devices , the playback speed will reset after each initilization of controller 
+// ON ios devices , the playback speed will reset after each initilization of controller
   _setIosPlayBackSpeed({required double currentSpeed}) async {
     if (FlickVideoManager.currentSpeed != currentSpeed &&
         (videoPlayerController?.value.isPlaying ?? false)) {
