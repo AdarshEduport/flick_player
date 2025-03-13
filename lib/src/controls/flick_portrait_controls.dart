@@ -248,26 +248,44 @@ Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
               ? nextLine
               : '$baseUrl/${nextLine.startsWith('/') ? nextLine.substring(1) : nextLine}';
 
-          // Extract quality from the path
+          // Extract resolution from STREAM-INF line
+          final resolutionMatch =
+              RegExp(r'RESOLUTION=\d+x(\d+)').firstMatch(currentLine);
+          if (resolutionMatch != null) {
+            final height = resolutionMatch.group(1);
+            if (height != null) {
+              final qualityString = '${height}p';
+              qualities.add(StreamQuality(qualityString, fullUrl));
+              log('Quality: $qualityString, URL: $fullUrl');
+              continue;
+            }
+          }
+
+          // Fallback: Extract quality from the path if RESOLUTION tag is not present
           final pathParts = fullUrl.split('/');
-          final qualityPart = pathParts.firstWhere(
-            (part) =>
-                part.contains('p') &&
-                (part.endsWith('p') || part.contains('p_')),
-            orElse: () => '',
-          );
-
-          if (qualityPart.isNotEmpty) {
-            final qualityString = qualityPart.contains('_')
-                ? qualityPart.split('_').first
-                : qualityPart;
-
-            qualities.add(StreamQuality(qualityString, fullUrl));
-            log('Quality: $qualityString, URL: $fullUrl');
+          for (final part in pathParts) {
+            final qualityMatch = RegExp(r'(\d+)p').firstMatch(part);
+            if (qualityMatch != null) {
+              final qualityString = qualityMatch.group(0);
+              if (qualityString != null) {
+                qualities.add(StreamQuality(qualityString, fullUrl));
+                log('Quality: $qualityString, URL: $fullUrl');
+                break;
+              }
+            }
           }
         }
       }
     }
+
+    // Sort qualities in descending order (highest quality first)
+    qualities.sort((a, b) {
+      if (a.qualityLevel == 'Auto') return -1;
+      if (b.qualityLevel == 'Auto') return 1;
+      final aHeight = int.tryParse(a.qualityLevel.replaceAll('p', '')) ?? 0;
+      final bHeight = int.tryParse(b.qualityLevel.replaceAll('p', '')) ?? 0;
+      return bHeight.compareTo(aHeight);
+    });
 
     return qualities;
   } catch (e) {
