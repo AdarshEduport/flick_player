@@ -135,7 +135,7 @@ class _FlickVideoWithControlsState extends State<FlickVideoWithControls> {
                               _showVideoCaption
                           ? Positioned(
                               bottom: 5,
-                              child: Transform.scale(
+                              child: Transform.scale( 
                                 scale: 0.7,
                                 child: ClosedCaption(
                                     textStyle: widget.closedCaptionTextStyle,

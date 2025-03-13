@@ -37,9 +37,10 @@ class FlickProgressBarSettings {
     this.backgroundColor = const Color.fromRGBO(255, 255, 255, 0.24),
     this.padding = const EdgeInsets.symmetric(
       vertical: 10,
+      horizontal: 4
     ),
     this.height = 2,
-    this.handleRadius = 6,
+    this.handleRadius = 8.5,
     this.curveRadius = 4,
     this.getPlayedPaint,
     this.getBufferedPaint,
