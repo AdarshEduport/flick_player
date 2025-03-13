@@ -57,7 +57,8 @@ class _SamplePlayerState extends State<SamplePlayer> {
               child: FlickVideoPlayer(
                 flickVideoWithControls: FlickVideoWithControls(
                   videoFit: BoxFit.fitHeight,
-                  controls: FlickPortraitControls(onQualityChanged: () async {
+                  controls: FlickPortraitControls(
+                    onQualityChanged: () async {
                     final url = FlickVideoManager.url.isEmpty
                         ? FlickVideoManager.masterUrl
                         : FlickVideoManager.url;
@@ -68,7 +69,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
                       FlickVideoManager.lastErrorPosition =
                           position ?? Duration();
                     }
-                    ;
+                    
 
                     flickManager.handleChangeVideo(
                         VideoPlayerController.networkUrl(Uri.parse(url),
@@ -80,7 +81,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
               ),
             ),
           ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.seven_k))
+      
         ],
       ),
     );
