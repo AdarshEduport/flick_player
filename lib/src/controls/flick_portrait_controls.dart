@@ -231,6 +231,9 @@ class StreamQuality {
   static Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
     final qualities = <StreamQuality>[];
     try {
+      int getPixels(String resolution) {
+      return int.parse(resolution.replaceAll('p', ''));
+    }
       final response = await http.get(Uri.parse(mainM3u8Url));
 
       final playList = await HlsPlaylistParser.create()
@@ -247,7 +250,7 @@ class StreamQuality {
         
       }
 
-        qualities.sort((a, b) => a.qualityLevel.compareTo(b.qualityLevel));
+        qualities.sort((a, b) =>getPixels(a.qualityLevel).compareTo(getPixels(b.qualityLevel)));
         qualities.insert(0, StreamQuality('Auto', mainM3u8Url));
       return qualities;
     } catch (e) {
@@ -257,6 +260,8 @@ class StreamQuality {
     }
   }
 }
+
+
 
 // Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
 //   try {

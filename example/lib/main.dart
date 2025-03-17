@@ -27,6 +27,8 @@ class _SamplePlayerState extends State<SamplePlayer> {
   final url='https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8';
   final url2 ='https://d357lqen3ahf81.cloudfront.net/transcoded/6FNnH2Mcznp/video.m3u8';
   final url3 ='https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8';
+  final url4 ="https://assets-dev.eduport.app/hls/19fc6ea4-e7ff-47e1-b210-18ea8ac61e15/master.m3u8";
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +36,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
       startAt: Duration(seconds: 400),
       videoPlayerController: VideoPlayerController.networkUrl(
         Uri.parse(
-          url3,
+          url4,
         ),
         //https://d357lqen3ahf81.cloudfront.net/transcoded/BYQBKK3tKhH/video.m3u8 (240p_h264/video.m3u8)
         formatHint: VideoFormat.hls,
