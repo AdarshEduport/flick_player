@@ -2,6 +2,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hls_parser/flutter_hls_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -195,7 +196,7 @@ class FlickPortraitControls extends StatelessWidget {
                           settingsSheet(
                             context: context,
                             currentQuality: -1,
-                            qualities: await fetchQualities(url),
+                           masterUrl: url,
                             currentSpeed:
                                 FlickVideoManager.currentSpeed.toDouble(),
                             onQualityChanged: () {
@@ -226,69 +227,98 @@ class StreamQuality {
 
   final String qualityLevel;
   final String url;
-}
 
-Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
-  try {
-    final response = await http.get(Uri.parse(mainM3u8Url));
-    final lines = response.body.toString().split('\n');
-    final qualities = <StreamQuality>[StreamQuality('Auto', mainM3u8Url)];
+  static Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
+    final qualities = <StreamQuality>[];
+    try {
+      final response = await http.get(Uri.parse(mainM3u8Url));
 
-    final uri = Uri.parse(mainM3u8Url);
-    final baseUrl =
-        '${uri.scheme}://${uri.host}${uri.path.substring(0, uri.path.lastIndexOf('/'))}';
+      final playList = await HlsPlaylistParser.create()
+          .parseString(Uri.parse(mainM3u8Url), response.body.toString());
+      playList as HlsMasterPlaylist;
 
-    for (var i = 0; i < lines.length - 1; i++) {
-      final currentLine = lines[i].trim();
-      final nextLine = lines[i + 1].trim();
-
-      if (currentLine.startsWith('#EXT-X-STREAM-INF')) {
-        if (nextLine.isNotEmpty && !nextLine.startsWith('#')) {
-          final fullUrl = nextLine.startsWith('http')
-              ? nextLine
-              : '$baseUrl/${nextLine.startsWith('/') ? nextLine.substring(1) : nextLine}';
-
-          // Extract resolution from STREAM-INF line
-          final resolutionMatch =
-              RegExp(r'RESOLUTION=\d+x(\d+)').firstMatch(currentLine);
-          if (resolutionMatch != null) {
-            final height = resolutionMatch.group(1);
-            if (height != null) {
-              final qualityString = '${height}p';
-              qualities.add(StreamQuality(qualityString, fullUrl));
-              log('Quality: $qualityString, URL: $fullUrl');
-              continue;
-            }
-          }
-
-          // Fallback: Extract quality from the path if RESOLUTION tag is not present
-          final pathParts = fullUrl.split('/');
-          for (final part in pathParts) {
-            final qualityMatch = RegExp(r'(\d+)p').firstMatch(part);
-            if (qualityMatch != null) {
-              final qualityString = qualityMatch.group(0);
-              if (qualityString != null) {
-                qualities.add(StreamQuality(qualityString, fullUrl));
-                log('Quality: $qualityString, URL: $fullUrl');
-                break;
-              }
-            }
-          }
+      for (final variant in playList.variants) {
+        final height = variant.format.height ?? 0;
+        final width = variant.format.width ?? 0;
+        final quality = height>width?width:height;
+        if(quality!=0){
+           qualities.add(StreamQuality('$quality'+'p', variant.url.toString()));
         }
+        
       }
+
+        qualities.sort((a, b) => a.qualityLevel.compareTo(b.qualityLevel));
+        qualities.insert(0, StreamQuality('Auto', mainM3u8Url));
+      return qualities;
+    } catch (e) {
+      qualities.insert(0, StreamQuality('Auto', mainM3u8Url));
+      return qualities;
+
     }
-
-    // Sort qualities in descending order (highest quality first)
-    qualities.sort((a, b) {
-      if (a.qualityLevel == 'Auto') return -1;
-      if (b.qualityLevel == 'Auto') return 1;
-      final aHeight = int.tryParse(a.qualityLevel.replaceAll('p', '')) ?? 0;
-      final bHeight = int.tryParse(b.qualityLevel.replaceAll('p', '')) ?? 0;
-      return bHeight.compareTo(aHeight);
-    });
-
-    return qualities;
-  } catch (e) {
-    rethrow;
   }
 }
+
+// Future<List<StreamQuality>> fetchQualities(String mainM3u8Url) async {
+//   try {
+//     final response = await http.get(Uri.parse(mainM3u8Url));
+//     final lines = response.body.toString().split('\n');
+//     final qualities = <StreamQuality>[StreamQuality('Auto', mainM3u8Url)];
+
+//     final uri = Uri.parse(mainM3u8Url);
+//     final baseUrl =
+//         '${uri.scheme}://${uri.host}${uri.path.substring(0, uri.path.lastIndexOf('/'))}';
+
+//     for (var i = 0; i < lines.length - 1; i++) {
+//       final currentLine = lines[i].trim();
+//       final nextLine = lines[i + 1].trim();
+
+//       if (currentLine.startsWith('#EXT-X-STREAM-INF')) {
+//         if (nextLine.isNotEmpty && !nextLine.startsWith('#')) {
+//           final fullUrl = nextLine.startsWith('http')
+//               ? nextLine
+//               : '$baseUrl/${nextLine.startsWith('/') ? nextLine.substring(1) : nextLine}';
+
+//           // Extract resolution from STREAM-INF line
+//           final resolutionMatch =
+//               RegExp(r'RESOLUTION=\d+x(\d+)').firstMatch(currentLine);
+//           if (resolutionMatch != null) {
+//             final height = resolutionMatch.group(1);
+//             if (height != null) {
+//               final qualityString = '${height}p';
+//               qualities.add(StreamQuality(qualityString, fullUrl));
+//               log('Quality: $qualityString, URL: $fullUrl');
+//               continue;
+//             }
+//           }
+
+//           // Fallback: Extract quality from the path if RESOLUTION tag is not present
+//           final pathParts = fullUrl.split('/');
+//           for (final part in pathParts) {
+//             final qualityMatch = RegExp(r'(\d+)p').firstMatch(part);
+//             if (qualityMatch != null) {
+//               final qualityString = qualityMatch.group(0);
+//               if (qualityString != null) {
+//                 qualities.add(StreamQuality(qualityString, fullUrl));
+//                 log('Quality: $qualityString, URL: $fullUrl');
+//                 break;
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+
+//     // Sort qualities in descending order (highest quality first)
+//     qualities.sort((a, b) {
+//       if (a.qualityLevel == 'Auto') return -1;
+//       if (b.qualityLevel == 'Auto') return 1;
+//       final aHeight = int.tryParse(a.qualityLevel.replaceAll('p', '')) ?? 0;
+//       final bHeight = int.tryParse(b.qualityLevel.replaceAll('p', '')) ?? 0;
+//       return bHeight.compareTo(aHeight);
+//     });
+
+//     return qualities;
+//   } catch (e) {
+//     rethrow;
+//   }
+// }

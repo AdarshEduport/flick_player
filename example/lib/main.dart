@@ -24,6 +24,9 @@ class SamplePlayer extends StatefulWidget {
 
 class _SamplePlayerState extends State<SamplePlayer> {
   late FlickManager flickManager;
+  final url='https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8';
+  final url2 ='https://d357lqen3ahf81.cloudfront.net/transcoded/6FNnH2Mcznp/video.m3u8';
+  final url3 ='https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8';
   @override
   void initState() {
     super.initState();
@@ -31,7 +34,7 @@ class _SamplePlayerState extends State<SamplePlayer> {
       startAt: Duration(seconds: 400),
       videoPlayerController: VideoPlayerController.networkUrl(
         Uri.parse(
-          "https://d357lqen3ahf81.cloudfront.net/transcoded/6FNnH2Mcznp/video.m3u8",
+          url3,
         ),
         //https://d357lqen3ahf81.cloudfront.net/transcoded/BYQBKK3tKhH/video.m3u8 (240p_h264/video.m3u8)
         formatHint: VideoFormat.hls,
