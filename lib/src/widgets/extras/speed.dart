@@ -250,6 +250,7 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
       height: isLoading?250:null,
       child:isLoading ? Center(child: CircularProgressIndicator(),):ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        physics: BouncingScrollPhysics(),
         separatorBuilder: (context, index) => const SizedBox(
           height: 8,
         ),
