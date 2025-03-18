@@ -178,17 +178,19 @@ class FlickVideoManager extends ChangeNotifier {
       await videoPlayerController!.seekTo(startAt);
       await videoPlayerController!.play();
     }
-    if(Platform.isAndroid){
- await videoPlayerController!
-        .setPlaybackSpeed(FlickVideoManager.currentSpeed);
+    if (Platform.isAndroid) {
+      await videoPlayerController!
+          .setPlaybackSpeed(FlickVideoManager.currentSpeed);
     }
-   
 
+    if (Platform.isIOS && canSeek) {
+     await videoPlayerController!.pause();
+    }
     _notify();
   }
 
   // Listener for video change.
-  _videoListener()async {
+  _videoListener() async {
     _videoPlayerValue = videoPlayerController!.value;
 
     // If video position has reached the end, take action for videoEnd.
@@ -218,10 +220,12 @@ class FlickVideoManager extends ChangeNotifier {
         videoPlayerController!.value.buffered.isNotEmpty == true &&
         videoPlayerController!.value.position.inSeconds >=
             videoPlayerController!.value.buffered[0].end.inSeconds;
-   log('isPlaying -->${videoPlayerController!.value.isPlaying} buffr ${_isBuffering}');
+    log('isPlaying -->${videoPlayerController!.value.isPlaying} buffr ${_isBuffering}');
 
-   bool isLoading = (isBuffering && isPlaying || (videoPlayerValue?.isBuffering??false)) || !isVideoInitialized;
-  await _setIosPlayBackSpeed(
+    bool isLoading = (isBuffering && isPlaying ||
+            (videoPlayerValue?.isBuffering ?? false)) ||
+        !isVideoInitialized;
+    await _setIosPlayBackSpeed(
         currentSpeed: videoPlayerController!.value.playbackSpeed,
         isLoading: isLoading);
 
@@ -234,11 +238,10 @@ class FlickVideoManager extends ChangeNotifier {
     if (Platform.isIOS &&
         FlickVideoManager.currentSpeed != currentSpeed &&
         !isLoading) {
-          
-     await Future.delayed(Duration(milliseconds: 1), () async {
+      await Future.delayed(Duration(milliseconds: 1), () async {
         await videoPlayerController!
             .setPlaybackSpeed(FlickVideoManager.currentSpeed);
-        log('Current speed -->${currentSpeed} ios speed ${FlickVideoManager.currentSpeed}');
+        log('Current speed11 -->${currentSpeed} ios speed ${FlickVideoManager.currentSpeed}');
       });
     }
   }

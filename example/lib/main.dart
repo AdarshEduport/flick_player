@@ -4,6 +4,8 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick-video-player.dart';
 
@@ -85,6 +87,10 @@ class _SamplePlayerState extends State<SamplePlayer> {
                             VideoPlayerController.networkUrl(Uri.parse(url),
                                 formatHint: VideoFormat.hls),
                             startAfter: FlickVideoManager.lastErrorPosition);
+
+                           
+
+
                       }),
                 ),
                 flickManager: flickManager,
