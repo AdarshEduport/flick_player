@@ -129,6 +129,7 @@ class FlickVideoManager extends ChangeNotifier {
     VideoPlayerController? oldController = videoPlayerController;
 
     Duration? lastWatchDuration = oldController?.value.position;
+
     _flickManager.flickControlManager!.pause();
     _videoPlayerController = newController;
     oldController?.removeListener(_videoListener);
@@ -163,7 +164,7 @@ class FlickVideoManager extends ChangeNotifier {
 
     if (autoPlay &&
         _flickManager._context != null &&
-          ModalRoute.of(_flickManager._context!)!=null &&
+        ModalRoute.of(_flickManager._context!) != null &&
         ModalRoute.of(_flickManager._context!)!.isCurrent) {
       _flickManager.flickControlManager!.play();
     }
@@ -172,22 +173,22 @@ class FlickVideoManager extends ChangeNotifier {
     if (canSeek) {
       await videoPlayerController!.seekTo(lastWatchDuration);
       await videoPlayerController!.play();
-
     }
     if (startAt != null && autoPlay && !canSeek) {
       await videoPlayerController!.seekTo(startAt);
       await videoPlayerController!.play();
-      
     }
-    if (Platform.isAndroid)
-        await videoPlayerController!
-            .setPlaybackSpeed(FlickVideoManager.currentSpeed);
+    if(Platform.isAndroid){
+ await videoPlayerController!
+        .setPlaybackSpeed(FlickVideoManager.currentSpeed);
+    }
+   
 
     _notify();
   }
 
   // Listener for video change.
-  _videoListener() {
+  _videoListener()async {
     _videoPlayerValue = videoPlayerController!.value;
 
     // If video position has reached the end, take action for videoEnd.
@@ -198,7 +199,7 @@ class FlickVideoManager extends ChangeNotifier {
         (videoPlayerValue!.position) >= videoPlayerValue!.duration) {
       if (!_currentVideoEnded) {
         handleVideoEnd();
-        }
+      }
     } else {
       // Cancel the video end timer if running while user starts seeing the video again.
       _currentVideoEnded = false;
@@ -217,24 +218,27 @@ class FlickVideoManager extends ChangeNotifier {
         videoPlayerController!.value.buffered.isNotEmpty == true &&
         videoPlayerController!.value.position.inSeconds >=
             videoPlayerController!.value.buffered[0].end.inSeconds;
-          
-    _setIosPlayBackSpeed(
-        currentSpeed: videoPlayerController!.value.playbackSpeed);
+   log('isPlaying -->${videoPlayerController!.value.isPlaying} buffr ${_isBuffering}');
+
+   bool isLoading = (isBuffering && isPlaying || (videoPlayerValue?.isBuffering??false)) || !isVideoInitialized;
+  await _setIosPlayBackSpeed(
+        currentSpeed: videoPlayerController!.value.playbackSpeed,
+        isLoading: isLoading);
 
     _notify();
   }
 
-
-// ON ios devices , the playback speed will reset after each initilization of controller 
-  _setIosPlayBackSpeed({required double currentSpeed}) async {
-    if (FlickVideoManager.currentSpeed != currentSpeed &&
-        (videoPlayerController?.value.isPlaying ==true) &&
-        (videoPlayerController?.value.isBuffering ==false) ) {
-     
-      Future.delayed(Duration(milliseconds: 300), () async {
+// ON ios devices , the playback speed will reset after each initilization of controller
+  Future<void> _setIosPlayBackSpeed(
+      {required double currentSpeed, required bool isLoading}) async {
+    if (Platform.isIOS &&
+        FlickVideoManager.currentSpeed != currentSpeed &&
+        !isLoading) {
+          
+     await Future.delayed(Duration(milliseconds: 1), () async {
         await videoPlayerController!
             .setPlaybackSpeed(FlickVideoManager.currentSpeed);
-             log('Current speed -->${currentSpeed} ios speed ${FlickVideoManager.currentSpeed}');
+        log('Current speed -->${currentSpeed} ios speed ${FlickVideoManager.currentSpeed}');
       });
     }
   }

@@ -22,9 +22,9 @@ class FlickVideoBuffer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FlickVideoManager videoManager = Provider.of<FlickVideoManager>(context);
-
+    final bool isBuffering =(videoManager.isBuffering && videoManager.isPlaying || (videoManager.videoPlayerValue?.isBuffering??false)) || !videoManager.isVideoInitialized;
     return Container(
-      child: (videoManager.isBuffering && videoManager.isPlaying || (videoManager.videoPlayerValue?.isBuffering??false))
+      child: isBuffering
           ? bufferingChild
           : child,
     );
