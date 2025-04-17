@@ -23,6 +23,7 @@ import 'package:flick_video_player/src/widgets/helpers/progress_bar/progress_bar
 /// Default portrait controls.
 class FlickPortraitControls extends StatelessWidget {
   final Function() onQualityChanged;
+  final Function(double speed) onSpeedChanged;
   final void Function(String errorDescription)? onErrorRefresh;
   const FlickPortraitControls({
     Key? key,
@@ -31,6 +32,7 @@ class FlickPortraitControls extends StatelessWidget {
     this.iconSize = 20,
     this.fontSize = 12,
     this.progressBarSettings,
+     required this.onSpeedChanged,
   }) : super(key: key);
 
   /// Icon size.
@@ -207,6 +209,7 @@ class FlickPortraitControls extends StatelessWidget {
                              
                             },
                             onPlaybackSpeedChanged: (newSpeed) {
+                              onSpeedChanged(newSpeed);
                               controlManager.setPlaybackSpeed(newSpeed);
                               FlickVideoManager.currentSpeed = newSpeed;
                               Navigator.pop(context);

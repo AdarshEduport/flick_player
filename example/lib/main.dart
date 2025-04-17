@@ -66,6 +66,9 @@ class _SamplePlayerState extends State<SamplePlayer> {
                 flickVideoWithControls: FlickVideoWithControls(
                   videoFit: BoxFit.fitHeight,
                   controls: FlickPortraitControls(
+                    onSpeedChanged: (speed) {
+                      
+                    },
                       progressBarSettings: FlickProgressBarSettings(
                           handleColor: Colors.red,
                           handleRadius: 8.5,
