@@ -39,7 +39,7 @@ class FlickVideoManager extends ChangeNotifier {
   /// Is current playing video ended.
   bool get isVideoEnded => _currentVideoEnded;
 
-  set setAutoplay(bool status) {
+  void setAutoplay(bool status) {
       autoPlay = status;
     }
 
