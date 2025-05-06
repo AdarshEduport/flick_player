@@ -104,12 +104,12 @@ class FlickVideoManager extends ChangeNotifier {
   _handleChangeVideo(VideoPlayerController newController,
       {Duration? videoChangeDuration,
       Duration? startAt,
-      TimerCancelCallback? timerCancelCallback}) async {
+      TimerCancelCallback? timerCancelCallback ,bool shouldPause = false}) async {
     // If videoChangeDuration is not null, start the autoPlayTimer.
     if (videoChangeDuration != null) {
       _timerCancelCallback = timerCancelCallback;
       _videoChangeCallback = () {
-        _changeVideo(newController, startAt: startAt);
+        _changeVideo(newController, startAt: startAt,shouldPause: shouldPause);
         _nextVideoAutoPlayTimer = null;
         _nextVideoAutoPlayDuration = null;
         _videoChangeCallback = null;
@@ -122,12 +122,12 @@ class FlickVideoManager extends ChangeNotifier {
       _notify();
     } else {
       // If videoChangeDuration is null, directly change the video.
-      _changeVideo(newController, startAt: startAt);
+      _changeVideo(newController, startAt: startAt,shouldPause: shouldPause);
     }
   }
 
   // Immediately change the video.
-  _changeVideo(VideoPlayerController newController, {Duration? startAt}) async {
+  _changeVideo(VideoPlayerController newController, {Duration? startAt,bool shouldPause =false}) async {
     //  Change the videoPlayerController with the new controller,
     // notify the controller change and remove listeners from the old controller.
     VideoPlayerController? oldController = videoPlayerController;
@@ -176,11 +176,11 @@ class FlickVideoManager extends ChangeNotifier {
         lastWatchDuration != null && lastWatchDuration != Duration.zero;
     if (canSeek) {
       await videoPlayerController!.seekTo(lastWatchDuration);
-      await videoPlayerController!.play();
+     if(!shouldPause) {await videoPlayerController!.play();}
     }
     if (startAt != null && autoPlay && !canSeek) {
       await videoPlayerController!.seekTo(startAt);
-      await videoPlayerController!.play();
+      if(!shouldPause) {await videoPlayerController!.play();}
     }
     if (Platform.isAndroid) {
       await videoPlayerController!

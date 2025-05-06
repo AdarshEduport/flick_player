@@ -70,8 +70,10 @@ class FlickManager {
   handleChangeVideo(VideoPlayerController videoPlayerController,
       {Duration? videoChangeDuration,
       Duration? startAfter,
+       bool shouldPause = false,
       TimerCancelCallback? timerCancelCallback}) {
     _flickVideoManager!._handleChangeVideo(videoPlayerController,
+    shouldPause: shouldPause,
         videoChangeDuration: videoChangeDuration,
         startAt:startAfter ,
         timerCancelCallback: timerCancelCallback);
