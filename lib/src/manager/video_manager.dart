@@ -24,7 +24,7 @@ class FlickVideoManager extends ChangeNotifier {
   bool _mounted = true;
 
   /// Auto-play the video after initialization.
-  final bool autoPlay;
+  bool autoPlay;
 
   ///setting initial video quality as -1 auto
   static int currentQuality = 0;
@@ -38,6 +38,10 @@ class FlickVideoManager extends ChangeNotifier {
 
   /// Is current playing video ended.
   bool get isVideoEnded => _currentVideoEnded;
+
+  set setAutoplay(bool status) {
+      autoPlay = status;
+    }
 
   /// Is video buffering.
   bool get isBuffering => _isBuffering;
