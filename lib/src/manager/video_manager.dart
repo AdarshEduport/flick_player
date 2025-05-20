@@ -98,12 +98,13 @@ class FlickVideoManager extends ChangeNotifier {
   _handleChangeVideo(VideoPlayerController newController,
       {Duration? videoChangeDuration,
       Duration? startAt,
+      double ? speed,
       TimerCancelCallback? timerCancelCallback}) async {
     // If videoChangeDuration is not null, start the autoPlayTimer.
     if (videoChangeDuration != null) {
       _timerCancelCallback = timerCancelCallback;
       _videoChangeCallback = () {
-        _changeVideo(newController, startAt: startAt);
+        _changeVideo(newController, startAt: startAt,speed: speed);
         _nextVideoAutoPlayTimer = null;
         _nextVideoAutoPlayDuration = null;
         _videoChangeCallback = null;
@@ -116,12 +117,12 @@ class FlickVideoManager extends ChangeNotifier {
       _notify();
     } else {
       // If videoChangeDuration is null, directly change the video.
-      _changeVideo(newController, startAt: startAt);
+      _changeVideo(newController, startAt: startAt,speed:speed );
     }
   }
 
   // Immediately change the video.
-  _changeVideo(VideoPlayerController newController, {Duration? startAt}) async {
+  _changeVideo(VideoPlayerController newController, {Duration? startAt,double ?  speed}) async {
     //  Change the videoPlayerController with the new controller,
     // notify the controller change and remove listeners from the old controller.
     VideoPlayerController? oldController = videoPlayerController;
@@ -144,7 +145,13 @@ class FlickVideoManager extends ChangeNotifier {
     // (User can initialize the video while passing to flick).
     if (!videoPlayerController!.value.isInitialized && autoInitialize) {
       try {
-        await videoPlayerController!.initialize();
+       
+     await  videoPlayerController!.
+         initialize();
+
+          if(speed!=null){
+       await videoPlayerController!.setPlaybackSpeed(speed);
+        }
       } catch (err) {
         _flickManager._handleErrorInVideo();
       }

@@ -21,6 +21,7 @@ class FlickManager {
     /// Auto initialize the video.
     bool autoInitialize = true,
     Duration? startAt,
+    double ? speed ,
 
     /// Auto-play video once initialized.
     bool autoPlay = true,
@@ -35,7 +36,7 @@ class FlickManager {
       flickManager: this,
     );
     _flickVideoManager!
-        ._handleChangeVideo(videoPlayerController, startAt: startAt);
+        ._handleChangeVideo(videoPlayerController, startAt: startAt,speed: speed);
     FlickVideoManager.masterUrl = videoPlayerController.dataSource;
   }
 
@@ -76,6 +77,7 @@ class FlickManager {
         timerCancelCallback: timerCancelCallback);
 
     _flickControlManager!.seekTo(startAfter ?? Duration.zero);
+    
 
 
   
