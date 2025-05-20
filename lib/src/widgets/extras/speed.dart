@@ -67,7 +67,8 @@ class _PlayBackSpeedWidgetState extends State<PlayBackSpeedWidget> {
                 child: Row(
                   children: [
                     Visibility(
-                      visible: playBackSpeeds.keys.toList()[index] == currentSpeed,
+                      visible:
+                          playBackSpeeds.keys.toList()[index] == currentSpeed,
                       replacement: const SizedBox(
                         width: 28,
                       ),
@@ -97,7 +98,8 @@ void settingsSheet(
     required double currentSpeed,
     required Function() onQualityChanged,
     required dynamic Function(double) onPlaybackSpeedChanged,
-    required List<StreamQuality> qualities}) {
+    required String masterUrl}) 
+     {
   showModalBottomSheet(
     useSafeArea: true,
     backgroundColor: Colors.transparent,
@@ -115,7 +117,7 @@ void settingsSheet(
         mainAxisSize: MainAxisSize.min,
         children: [
           Visibility(
-            visible: qualities.isNotEmpty,
+            visible: masterUrl.startsWith('http'),
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: VideoSettingsTile(
@@ -130,13 +132,13 @@ void settingsSheet(
                     backgroundColor: Colors.transparent,
                     context: context,
                     builder: (context) => QualitiesWidget(
+                      masterUrl: masterUrl,
                       currentQuality: currentQuality,
                       onQualityChanged: () async {
                         // await player.setRate(newSpeed);
-
                         onQualityChanged();
                       },
-                      qualities: qualities,
+                 
                     ),
                   );
                 },
@@ -202,19 +204,39 @@ class VideoSettingsTile extends StatelessWidget {
 
 class QualitiesWidget extends StatefulWidget {
   final int currentQuality;
-  final List<StreamQuality> qualities;
+  final String masterUrl;
   final Function() onQualityChanged;
   const QualitiesWidget(
       {super.key,
       required this.onQualityChanged,
       required this.currentQuality,
-      required this.qualities});
+      required this.masterUrl});
 
   @override
   State<QualitiesWidget> createState() => _QualitiesWidgetState();
 }
 
+bool isLoading = true;
+List<StreamQuality> qualities = [];
+
 class _QualitiesWidgetState extends State<QualitiesWidget> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    _fetchQualities();
+    super.initState();
+  }
+
+  _fetchQualities() async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final newQualities = await StreamQuality.fetchQualities(widget.masterUrl);
+      qualities.clear();
+      qualities.addAll(newQualities);
+      isLoading = false;
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -225,17 +247,19 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
           left: 16,
           right: 16),
       width: double.maxFinite,
-      child: ListView.separated(
+      height: isLoading?250:null,
+      child:isLoading ? Center(child: CircularProgressIndicator(),):ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        physics: BouncingScrollPhysics(),
         separatorBuilder: (context, index) => const SizedBox(
           height: 8,
         ),
         shrinkWrap: true,
-        itemCount: widget.qualities.length, //media urls + auto
+        itemCount: qualities.length, //media urls + auto
         itemBuilder: (context, index) => InkWell(
           onTap: () {
             setState(() {
-              FlickVideoManager.url = widget.qualities[index].url;
+              FlickVideoManager.url = qualities[index].url;
 
               FlickVideoManager.currentQuality = index;
               widget.onQualityChanged();
@@ -258,9 +282,7 @@ class _QualitiesWidgetState extends State<QualitiesWidget> {
                     ),
                   ),
                 ),
-                Text(index == 0
-                    ? 'Auto'
-                    : '${widget.qualities[index].qualityLevel}'),
+                Text(qualities[index].qualityLevel),
               ],
             ),
           ),

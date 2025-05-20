@@ -24,7 +24,7 @@ class FlickVideoManager extends ChangeNotifier {
   bool _mounted = true;
 
   /// Auto-play the video after initialization.
-  final bool autoPlay;
+  bool autoPlay;
 
   ///setting initial video quality as -1 auto
   static int currentQuality = 0;
@@ -33,10 +33,15 @@ class FlickVideoManager extends ChangeNotifier {
   static String url = '';
   static String masterUrl = '';
   static double currentSpeed = 1.0;
+  static Duration? lastErrorPosition;
   final bool autoInitialize;
 
   /// Is current playing video ended.
   bool get isVideoEnded => _currentVideoEnded;
+
+  void setAutoplay(bool status) {
+      autoPlay = status;
+    }
 
   /// Is video buffering.
   bool get isBuffering => _isBuffering;
@@ -93,18 +98,18 @@ class FlickVideoManager extends ChangeNotifier {
     FlickVideoManager.masterUrl = '';
     FlickVideoManager.currentSpeed = 1;
     FlickVideoManager.url = '';
+    FlickVideoManager.lastErrorPosition = null;
   }
 
   _handleChangeVideo(VideoPlayerController newController,
       {Duration? videoChangeDuration,
       Duration? startAt,
-      double ? speed,
-      TimerCancelCallback? timerCancelCallback}) async {
+      TimerCancelCallback? timerCancelCallback ,bool shouldPause = false,double ? speed,}) async {
     // If videoChangeDuration is not null, start the autoPlayTimer.
     if (videoChangeDuration != null) {
       _timerCancelCallback = timerCancelCallback;
       _videoChangeCallback = () {
-        _changeVideo(newController, startAt: startAt,speed: speed);
+        _changeVideo(newController, startAt: startAt,shouldPause: shouldPause,speed: speed);
         _nextVideoAutoPlayTimer = null;
         _nextVideoAutoPlayDuration = null;
         _videoChangeCallback = null;
@@ -117,17 +122,18 @@ class FlickVideoManager extends ChangeNotifier {
       _notify();
     } else {
       // If videoChangeDuration is null, directly change the video.
-      _changeVideo(newController, startAt: startAt,speed:speed );
+      _changeVideo(newController, startAt: startAt,shouldPause: shouldPause,speed: speed);
     }
   }
 
   // Immediately change the video.
-  _changeVideo(VideoPlayerController newController, {Duration? startAt,double ?  speed}) async {
+  _changeVideo(VideoPlayerController newController, {Duration? startAt,bool shouldPause =false,double ?  speed}) async {
     //  Change the videoPlayerController with the new controller,
     // notify the controller change and remove listeners from the old controller.
     VideoPlayerController? oldController = videoPlayerController;
 
     Duration? lastWatchDuration = oldController?.value.position;
+
     _flickManager.flickControlManager!.pause();
     _videoPlayerController = newController;
     oldController?.removeListener(_videoListener);
@@ -165,30 +171,35 @@ class FlickVideoManager extends ChangeNotifier {
           .seekTo(Duration(hours: 0, minutes: 0, seconds: 0, milliseconds: 0));
     }
 
-    if (autoPlay && ModalRoute.of(_flickManager._context!)!.isCurrent) {
-      //Chrome's autoplay policies are simple:
-      //Muted autoplay is always allowed.
-      if (kIsWeb) _flickManager.flickControlManager!.mute();
-      // if (kIsWeb) _flickManager.flickControlManager!.setVolume(0.5);
-
-      // Start playing the video.
+    if (autoPlay &&
+        _flickManager._context != null &&
+        ModalRoute.of(_flickManager._context!) != null &&
+        ModalRoute.of(_flickManager._context!)!.isCurrent) {
       _flickManager.flickControlManager!.play();
     }
-
-    if (lastWatchDuration != null && lastWatchDuration != Duration.zero) {
+    bool canSeek =
+        lastWatchDuration != null && lastWatchDuration != Duration.zero;
+    if (canSeek) {
       await videoPlayerController!.seekTo(lastWatchDuration);
-      videoPlayerController!.play();
+     if(!shouldPause) {await videoPlayerController!.play();}
     }
-    if (startAt != null) {
+    if (startAt != null && autoPlay && !canSeek) {
       await videoPlayerController!.seekTo(startAt);
-      videoPlayerController!.play();
+      if(!shouldPause) {await videoPlayerController!.play();}
+    }
+    if (Platform.isAndroid) {
+      await videoPlayerController!
+          .setPlaybackSpeed(FlickVideoManager.currentSpeed);
     }
 
+    if (Platform.isIOS && canSeek) {
+     await videoPlayerController!.pause();
+    }
     _notify();
   }
 
   // Listener for video change.
-  _videoListener() {
+  _videoListener() async {
     _videoPlayerValue = videoPlayerController!.value;
 
     // If video position has reached the end, take action for videoEnd.
@@ -218,8 +229,30 @@ class FlickVideoManager extends ChangeNotifier {
         videoPlayerController!.value.buffered.isNotEmpty == true &&
         videoPlayerController!.value.position.inSeconds >=
             videoPlayerController!.value.buffered[0].end.inSeconds;
+    log('isPlaying -->${videoPlayerController!.value.isPlaying} buffr ${_isBuffering}');
+
+    bool isLoading = (isBuffering && isPlaying ||
+            (videoPlayerValue?.isBuffering ?? false)) ||
+        !isVideoInitialized;
+    await _setIosPlayBackSpeed(
+        currentSpeed: videoPlayerController!.value.playbackSpeed,
+        isLoading: isLoading);
 
     _notify();
+  }
+
+// ON ios devices , the playback speed will reset after each initilization of controller
+  Future<void> _setIosPlayBackSpeed(
+      {required double currentSpeed, required bool isLoading}) async {
+    if (Platform.isIOS &&
+        FlickVideoManager.currentSpeed != currentSpeed &&
+        !isLoading) {
+      await Future.delayed(Duration(milliseconds: 1), () async {
+        await videoPlayerController!
+            .setPlaybackSpeed(FlickVideoManager.currentSpeed);
+        log('Current speed11 -->${currentSpeed} ios speed ${FlickVideoManager.currentSpeed}');
+      });
+    }
   }
 
   // Video-end handler.

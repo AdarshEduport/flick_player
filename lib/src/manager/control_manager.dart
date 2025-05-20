@@ -114,10 +114,6 @@ class FlickControlManager extends ChangeNotifier {
             await _videoPlayerController!.setPlaybackSpeed(FlickVideoManager.currentSpeed);
       });
      
-
-   
-   
-       
       });
     } else {
       await _videoPlayerController!.seekTo(moment);

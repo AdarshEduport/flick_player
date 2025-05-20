@@ -4,6 +4,8 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick-video-player.dart';
 
@@ -24,6 +26,12 @@ class SamplePlayer extends StatefulWidget {
 
 class _SamplePlayerState extends State<SamplePlayer> {
   late FlickManager flickManager;
+  final url='https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8';
+  final url1 ='https://d357lqen3ahf81.cloudfront.net/transcoded/7ZgAq4yZ8Cz/video.m3u8';
+  final url2 ='https://d357lqen3ahf81.cloudfront.net/transcoded/6FNnH2Mcznp/video.m3u8';
+  final url3 ='https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8';
+  final url4 ="https://assets-dev.eduport.app/hls/19fc6ea4-e7ff-47e1-b210-18ea8ac61e15/master.m3u8";
+
   @override
   void initState() {
     super.initState();
@@ -55,22 +63,45 @@ class _SamplePlayerState extends State<SamplePlayer> {
         children: [
           Flexible(
             child: AspectRatio(
-              aspectRatio: 16/9,
+              aspectRatio: 16 / 9,
               child: FlickVideoPlayer(
                 flickVideoWithControls: FlickVideoWithControls(
                   videoFit: BoxFit.fitHeight,
-                  controls: FlickPortraitControls(onQualityChanged: () {
-                    flickManager.handleChangeVideo(VideoPlayerController.networkUrl(
-                        Uri.parse(FlickVideoManager.url),
-                        formatHint: VideoFormat.hls
-                        ));
-                  }),
+                  controls: FlickPortraitControls(
+                    onSpeedChanged: (speed) {
+                      
+                    },
+                      progressBarSettings: FlickProgressBarSettings(
+                          handleColor: Colors.red,
+                          handleRadius: 8.5,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 4)),
+                      onQualityChanged: () async {
+                        final url = FlickVideoManager.url.isEmpty
+                            ? FlickVideoManager.masterUrl
+                            : FlickVideoManager.url;
+
+                        final position = await flickManager
+                            .flickVideoManager?.videoPlayerController?.position;
+                        if ((position ?? Duration()).inSeconds != 0) {
+                          FlickVideoManager.lastErrorPosition =
+                              position ?? Duration();
+                        }
+
+                        flickManager.handleChangeVideo(
+                            VideoPlayerController.networkUrl(Uri.parse(url),
+                                formatHint: VideoFormat.hls),
+                            startAfter: FlickVideoManager.lastErrorPosition);
+
+                           
+
+
+                      }),
                 ),
                 flickManager: flickManager,
               ),
             ),
           ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.seven_k))
         ],
       ),
     );

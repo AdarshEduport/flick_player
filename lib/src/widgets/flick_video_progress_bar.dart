@@ -5,15 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-
 /// Renders progress bar for the video using custom paint.
 class FlickVideoProgressBar extends StatelessWidget {
-  FlickVideoProgressBar({super.key, 
+  FlickVideoProgressBar({
+    super.key,
     this.onDragEnd,
     this.onDragStart,
     this.onDragUpdate,
     FlickProgressBarSettings? flickProgressBarSettings,
-  }) : flickProgressBarSettings = flickProgressBarSettings ?? FlickProgressBarSettings();
+  }) : flickProgressBarSettings =
+            flickProgressBarSettings ?? FlickProgressBarSettings();
 
   final FlickProgressBarSettings flickProgressBarSettings;
   final Function()? onDragStart;
@@ -109,7 +110,7 @@ class _ProgressBarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     double height = flickProgressBarSettings!.height;
     double width = size.width;
-    double curveRadius = flickProgressBarSettings!.curveRadius;
+    double curveRadius = flickProgressBarSettings!.curveRadius ;
     double handleRadius = flickProgressBarSettings!.handleRadius;
     Paint backgroundPaint = flickProgressBarSettings!.getBackgroundPaint != null
         ? flickProgressBarSettings!.getBackgroundPaint!(
